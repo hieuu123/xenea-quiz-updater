@@ -1,0 +1,32 @@
+name: Run Quiz Updater
+
+on:
+  schedule:
+    # Chạy mỗi ngày lúc 9h sáng UTC (cộng thêm +7h = 16h giờ VN)
+    - cron: "15 9 * * *"
+  workflow_dispatch:   # Cho phép bấm "Run workflow" thủ công
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Run script
+        run: |
+          python quiz_update.py
+        env:
+          WP_USERNAME: ${{ secrets.WP_USERNAME }}
+          WP_APP_PASSWORD: ${{ secrets.WP_APP_PASSWORD }}
