@@ -114,7 +114,7 @@ def update_post_after_h2(target_h2_text, question, answer):
     # 7. Update & publish
     payload = {
         "content": new_content,
-        "status": "draft"
+        "status": "publish"
     }
     update = requests.post(url, headers=headers, json=payload, timeout=15)
     print("🚀 Update status:", update.status_code)
