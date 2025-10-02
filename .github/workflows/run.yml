@@ -3,7 +3,10 @@ name: Run Quiz Updater
 on:
   schedule:
     # 16:15 giờ Việt Nam = 09:15 UTC
-    - cron: "41 9 * * *"
+    - cron: "46 9 * * *"
+    - cron: "52 9 * * *"
+    - cron: "01 10 * * *"
+    - cron: "07 10 * * *"
   workflow_dispatch:   # Cho phép chạy thủ công trong tab Actions
 
 jobs:
