@@ -6,9 +6,9 @@ from bs4 import BeautifulSoup
 WP_URL = "https://blog.mexc.com/wp-json/wp/v2/posts"
 WP_USERNAME = "AI Picks"   # ⚠️ username login thật (không phải Display Name)
 WP_APP_PASSWORD = "BZjF 3sMe HQgG 041j y079 SaFQ"  # giữ nguyên format
-POST_ID = 296423  # ID bài muốn update
-TARGET_H2_TEXT = "Xenea Wallet Daily Quiz Today’s Answer – October 15, 2025"
-CHECK_ANSWER = "B) Proving statements without data."
+POST_ID = 296611  # ID bài muốn update
+TARGET_H2_TEXT = "Xenea Wallet Daily Quiz Today’s Answer – October 16, 2025"
+CHECK_ANSWER = "A) Funding and sharing scientific research."
 
 # ================ SCRAPE SITE 1 ================
 def scrape_quiz_site1():
