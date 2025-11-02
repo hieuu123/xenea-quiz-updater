@@ -6,9 +6,9 @@ from bs4 import BeautifulSoup
 WP_URL = "https://blog.mexc.com/wp-json/wp/v2/posts"
 WP_USERNAME = "AI Picks"   # ⚠️ username login thật (không phải Display Name)
 WP_APP_PASSWORD = "BZjF 3sMe HQgG 041j y079 SaFQ"  # giữ nguyên format
-POST_ID = 300359  # ID bài muốn update
+POST_ID = 300397  # ID bài muốn update
 TARGET_H2_TEXT = "Xenea Wallet Daily Quiz Today’s Answer – November 2, 2025"
-CHECK_ANSWER = "D. Replicates to a new DACS node."
+CHECK_ANSWER = "A) Preferential caching for low-latency access."
 
 # ================ SCRAPE SITE 1 ================
 def scrape_quiz_site1():
