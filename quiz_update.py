@@ -4,11 +4,17 @@ from bs4 import BeautifulSoup
 
 # ================= CONFIG =================
 WP_URL = "https://blog.mexc.com/wp-json/wp/v2/posts"
-WP_USERNAME = "AI Picks"   # ⚠️ username login thật (không phải Display Name)
-WP_APP_PASSWORD = "BZjF 3sMe HQgG 041j y079 SaFQ"  # giữ nguyên format
-POST_ID = 304518  # ID bài muốn update
+WP_USERNAME = "AI Picks"
+WP_APP_PASSWORD = "BZjF 3sMe HQgG 041j y079 SaFQ"
+POST_ID = 304794
+
 TARGET_H2_TEXT = "Xenea Wallet Daily Quiz Today’s Answer – November 24, 2025"
-CHECK_ANSWER = "A) Look-alike address trickery."
+CHECK_ANSWER = "C) Do not move the dust..."
+
+# ngày find & replace
+OLD_DATE = "November 24"
+NEW_DATE = "November 25"
+
 
 # ================ SCRAPE SITE 1 ================
 def scrape_quiz_site1():
@@ -26,6 +32,7 @@ def scrape_quiz_site1():
     print("   Q:", question)
     print("   A:", answer)
     return question, answer
+
 
 # ================ SCRAPE SITE 2 ================
 def scrape_quiz_site2():
@@ -47,6 +54,7 @@ def scrape_quiz_site2():
     print("   A:", answer)
     return question, answer
 
+
 # ================ UPDATE POST ================
 def update_post_after_h2(target_h2_text, question, answer):
     token = base64.b64encode(f"{WP_USERNAME}:{WP_APP_PASSWORD}".encode()).decode("utf-8")
@@ -56,18 +64,18 @@ def update_post_after_h2(target_h2_text, question, answer):
         "Accept": "application/json"
     }
 
-    # 1. Fetch current post (rendered content)
+    # 1. Fetch current post
     url = f"{WP_URL}/{POST_ID}"
     response = requests.get(url, headers=headers, timeout=15)
     print("🔎 Fetch status:", response.status_code)
     if response.status_code != 200:
         print("❌ Không lấy được post:", response.text[:300])
-        return
+        return False
 
     post = response.json()
     if "content" not in post or "rendered" not in post["content"]:
         print("❌ Không thấy content.rendered:", post)
-        return
+        return False
 
     old_content = post["content"]["rendered"]
     print("✍️ Lấy content.rendered, độ dài:", len(old_content))
@@ -75,14 +83,14 @@ def update_post_after_h2(target_h2_text, question, answer):
     # 2. Parse HTML
     soup = BeautifulSoup(old_content, "html.parser")
 
-    # 3. Tìm <h2> có text khớp
+    # 3. Tìm <h2>
     h2_tag = soup.find("h2", string=lambda t: t and target_h2_text in t)
     if not h2_tag:
         print("❌ Không tìm thấy H2 phù hợp")
         print("Rendered snippet:", old_content[:400])
-        return
+        return False
 
-    # 4. Xóa 2 <p> liền kề sau H2 (nếu có)
+    # 4. Xóa 2 <p> sau H2
     next_tag = h2_tag.find_next_sibling()
     removed = 0
     for _ in range(2):
@@ -104,26 +112,60 @@ def update_post_after_h2(target_h2_text, question, answer):
     strong.string = answer
     a_tag.append(strong)
 
-    # 6. Chèn Q/A sau H2
+    # 6. Insert
     h2_tag.insert_after(a_tag)
     h2_tag.insert_after(q_tag)
 
     new_content = str(soup)
     print("[+] New content length:", len(new_content))
 
-    # 7. Update & publish
+    # ========== FIND & REPLACE DATE TRONG CONTENT ==========
+    new_content = new_content.replace(OLD_DATE, NEW_DATE)
+
+    # ========== UPDATE POST (content only) ==========
     payload = {
         "content": new_content,
         "status": "publish"
     }
-    update = requests.post(url, headers=headers, json=payload, timeout=15)
-    print("🚀 Update status:", update.status_code)
-    print("📄 Update response:", update.text[:500])
 
-    if update.status_code == 200:
-        print("✅ Post updated & published thành công!")
+    update = requests.post(url, headers=headers, json=payload, timeout=15)
+    print("🚀 Update content status:", update.status_code)
+
+    if update.status_code != 200:
+        print("❌ Error khi update content")
+        return False
+
+    print("✅ Content updated thành công!")
+
+    # ============================
+    # UPDATE SEO TITLE + META
+    # ============================
+
+    updated_post = update.json()
+
+    seo_title = updated_post.get("title", {}).get("rendered", "")
+    meta_desc = updated_post.get("yoast_head_json", {}).get("description", "")
+
+    new_seo_title = seo_title.replace(OLD_DATE, NEW_DATE)
+    new_meta_desc = meta_desc.replace(OLD_DATE, NEW_DATE)
+
+    seo_payload = {
+        "title": new_seo_title,
+        "yoast_head_json": {
+            "description": new_meta_desc
+        }
+    }
+
+    seo_update = requests.post(url, headers=headers, json=seo_payload, timeout=15)
+    print("🔧 Update SEO status:", seo_update.status_code)
+
+    if seo_update.status_code == 200:
+        print("✅ SEO title + meta description updated")
     else:
-        print("❌ Error khi update")
+        print("⚠️ Không update được SEO nhưng content đã update OK")
+
+    return True
+
 
 # ================ MAIN =================
 if __name__ == "__main__":
@@ -131,15 +173,19 @@ if __name__ == "__main__":
 
     if a1.strip() != CHECK_ANSWER.strip():
         print("✅ Site1 answer khác CHECK_ANSWER -> Update ngay")
-        update_post_after_h2(TARGET_H2_TEXT, q1, a1)
+        success = update_post_after_h2(TARGET_H2_TEXT, q1, a1)
+        if success:
+            print("🎉 All updates (Q/A + date + SEO) completed!")
     else:
         print("⚠️ Site1 answer trùng CHECK_ANSWER -> Thử site2")
         try:
             q2, a2 = scrape_quiz_site2()
             if a2.strip() != CHECK_ANSWER.strip():
                 print("✅ Site2 answer khác CHECK_ANSWER -> Update")
-                update_post_after_h2(TARGET_H2_TEXT, q2, a2)
+                success = update_post_after_h2(TARGET_H2_TEXT, q2, a2)
+                if success:
+                    print("🎉 All updates (Q/A + date + SEO) completed!")
             else:
-                print("⚠️ Site2 answer cũng trùng CHECK_ANSWER -> Không update")
+                print("⚠️ Site2 answer trùng CHECK_ANSWER -> Không update")
         except Exception as e:
             print("❌ Lỗi khi scrape site2:", e)
