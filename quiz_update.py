@@ -138,21 +138,27 @@ def update_post_after_h2(target_h2_text, question, answer):
     print("✅ Content updated thành công!")
 
     # ============================
-    # UPDATE SEO TITLE + META
+    # UPDATE SEO TITLE + META (Rank Math)
     # ============================
 
     updated_post = update.json()
 
     seo_title = updated_post.get("title", {}).get("rendered", "")
-    meta_desc = updated_post.get("yoast_head_json", {}).get("description", "")
+    
+    # Rank Math không dùng yoast_head_json → phải fetch meta gốc từ "meta"
+    meta_fields = updated_post.get("meta", {})
 
+    meta_desc = meta_fields.get("rank_math_description", "")
+
+    # find & replace ngày
     new_seo_title = seo_title.replace(OLD_DATE, NEW_DATE)
     new_meta_desc = meta_desc.replace(OLD_DATE, NEW_DATE)
 
     seo_payload = {
-        "title": new_seo_title,
-        "yoast_head_json": {
-            "description": new_meta_desc
+        "title": new_seo_title,      # cập nhật luôn title WP (hiển thị ở backend)
+        "meta": {
+            "rank_math_title": new_seo_title,
+            "rank_math_description": new_meta_desc
         }
     }
 
@@ -160,9 +166,9 @@ def update_post_after_h2(target_h2_text, question, answer):
     print("🔧 Update SEO status:", seo_update.status_code)
 
     if seo_update.status_code == 200:
-        print("✅ SEO title + meta description updated")
+        print("✅ Rank Math SEO title + meta description updated")
     else:
-        print("⚠️ Không update được SEO nhưng content đã update OK")
+        print("⚠️ Không update được Rank Math SEO nhưng content đã update OK")
 
     return True
 
