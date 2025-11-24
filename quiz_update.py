@@ -137,6 +137,27 @@ def update_post_after_h2(target_h2_text, question, answer):
 
     print("✅ Content updated thành công!")
 
+    # ============================
+    # UPDATE WP POST TITLE
+    # ============================
+    
+    updated_post = update.json()
+    current_title = updated_post.get("title", {}).get("rendered", "")
+    
+    new_title = current_title.replace(OLD_DATE, NEW_DATE)
+    
+    title_payload = {
+        "title": new_title
+    }
+    
+    title_update = requests.post(url, headers=headers, json=title_payload, timeout=15)
+    print("📝 Update Title status:", title_update.status_code)
+    
+    if title_update.status_code == 200:
+        print("✅ WP Post Title updated")
+    else:
+        print("⚠️ Title update failed (Content was updated OK)")
+
     return True
 
 # ================ MAIN =================
