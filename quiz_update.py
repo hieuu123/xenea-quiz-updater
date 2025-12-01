@@ -8,12 +8,12 @@ WP_USERNAME = "AI Picks"
 WP_APP_PASSWORD = "BZjF 3sMe HQgG 041j y079 SaFQ"
 POST_ID = 304794
 
-TARGET_H2_TEXT = "Xenea Wallet Daily Quiz Today for December 1, 2025"
+TARGET_H2_TEXT = "Xenea Wallet Daily Quiz Today for December 2, 2025"
 CHECK_ANSWER = "A) Zero-value transfer..."
 
 # ngày find & replace
-OLD_DATE = "December 1"
-NEW_DATE = "December 2"
+OLD_DATE = "December 2"
+NEW_DATE = "December 1"
 
 
 # ================ SCRAPE SITE 1 ================
