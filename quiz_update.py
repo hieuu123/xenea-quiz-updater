@@ -131,6 +131,7 @@ def update_post_after_h2(target_h2_text, question, answer):
         answer_p.append(" " + answer)
 
     # ========== FIND & REPLACE DATE TRONG CONTENT ==========
+    new_content = str(soup)
     new_content = new_content.replace(OLD_DATE, NEW_DATE)
 
     # ========== UPDATE POST (content only) ==========
