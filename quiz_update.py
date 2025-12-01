@@ -8,7 +8,7 @@ WP_USERNAME = "AI Picks"
 WP_APP_PASSWORD = "BZjF 3sMe HQgG 041j y079 SaFQ"
 POST_ID = 304794
 
-TARGET_H2_TEXT = "Xenea Wallet Daily Quiz Today’s Answer for December 1, 2025"
+TARGET_H2_TEXT = "Xenea Wallet Daily Quiz Today for December 1, 2025"
 CHECK_ANSWER = "A) Zero-value transfer."
 
 # ngày find & replace
@@ -90,34 +90,45 @@ def update_post_after_h2(target_h2_text, question, answer):
         print("Rendered snippet:", old_content[:400])
         return False
 
-    # 4. Xóa 2 <p> sau H2
+    # 4. Identify the <p> blocks after H2
     next_tag = h2_tag.find_next_sibling()
-    removed = 0
-    for _ in range(2):
-        if next_tag and next_tag.name == "p":
-            to_remove = next_tag
-            next_tag = next_tag.find_next_sibling()
-            to_remove.decompose()
-            removed += 1
-    print(f"[+] Removed {removed} <p> sau H2")
 
-    # 5. Tạo Q/A mới
-    q_tag = soup.new_tag("p")
-    q_tag.string = f"Question: {question}"
+    description_p = None
+    question_p = None
+    answer_p = None
 
-    a_tag = soup.new_tag("p")
-    a_tag.append("Answer: ")
+    # Find first 3 <p> tags
+    p_tags = []
+    while next_tag and len(p_tags) < 3:
+        if next_tag.name == "p":
+            p_tags.append(next_tag)
+        next_tag = next_tag.find_next_sibling()
 
-    strong = soup.new_tag("strong")
-    strong.string = answer
-    a_tag.append(strong)
+    if len(p_tags) < 3:
+        print("❌ Không tìm đủ 3 <p> sau H2 theo format mới.")
+        return False
 
-    # 6. Insert
-    h2_tag.insert_after(a_tag)
-    h2_tag.insert_after(q_tag)
+    description_p, question_p, answer_p = p_tags
 
-    new_content = str(soup)
-    print("[+] New content length:", len(new_content))
+    # =======================
+    # Update QUESTION <p>
+    # =======================
+    # Giữ nguyên phần <strong>The question for DATE:</strong>
+    strong_tag = question_p.find("strong")
+    if strong_tag:
+        prefix = strong_tag.get_text(strip=True) + " "
+        question_p.string = ""  # Clear old text
+        question_p.append(strong_tag)
+        question_p.append(" " + question)
+
+    # =======================
+    # Update ANSWER <p>
+    # =======================
+    strong_ans = answer_p.find("strong")
+    answer_p.string = ""
+    if strong_ans:
+        answer_p.append(strong_ans)
+        answer_p.append(" " + answer)
 
     # ========== FIND & REPLACE DATE TRONG CONTENT ==========
     new_content = new_content.replace(OLD_DATE, NEW_DATE)
