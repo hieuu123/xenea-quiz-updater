@@ -9,7 +9,7 @@ WP_APP_PASSWORD = "BZjF 3sMe HQgG 041j y079 SaFQ"
 POST_ID = 304794
 
 TARGET_H2_TEXT = "Xenea Wallet Daily Quiz Today for December 9, 2025"
-CHECK_ANSWER = "D) USD stablecoin."
+CHECK_ANSWER = "D) USD stablecoin..."
 
 # ngày find & replace
 OLD_DATE = "December 9"
