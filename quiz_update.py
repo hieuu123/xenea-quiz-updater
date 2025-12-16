@@ -1,23 +1,19 @@
-import os
 import base64
 import requests
 from bs4 import BeautifulSoup
-from openai import OpenAI
 
 # ================= CONFIG =================
 WP_URL = "https://blog.mexc.com/wp-json/wp/v2/posts"
 WP_USERNAME = os.getenv("WP_USERNAME")
 WP_APP_PASSWORD = os.getenv("WP_APP_PASSWORD")
-OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
-client = OpenAI(api_key=OPENAI_API_KEY)
 POST_ID = 304794
 
-TARGET_H2_TEXT = "Xenea Wallet Daily Quiz Today for December 16, 2025"
-CHECK_ANSWER = "A) Smart-contract Layer 1..."
+TARGET_H2_TEXT = "Xenea Wallet Daily Quiz Today for December 17, 2025"
+CHECK_ANSWER = "A) Smart-contract Layer 1."
 
 # ngày find & replace
-OLD_DATE = "December 16"
-NEW_DATE = "December 17"
+OLD_DATE = "December 17"
+NEW_DATE = "December 16"
 
 
 # ================ SCRAPE SITE 1 ================
@@ -134,9 +130,6 @@ def update_post_after_h2(target_h2_text, question, answer):
         answer_p.append(strong_ans)
         answer_p.append(" " + answer)
 
-    # ===== UPDATE CRYPTO SNAPSHOT (ALWAYS RUN) =====
-    update_crypto_price_snapshot(soup)
-    
     # ========== FIND & REPLACE DATE TRONG CONTENT ==========
     new_content = str(soup)
     new_content = new_content.replace(OLD_DATE, NEW_DATE)
@@ -177,127 +170,6 @@ def update_post_after_h2(target_h2_text, question, answer):
     else:
         print("⚠️ Title update failed (Content was updated OK)")
 
-    return True
-
-
-# ================ REWRITE SNAPSHOT ================
-
-def rewrite_snapshot_with_openai(plain_text):
-    prompt = f"""
-Rewrite the following crypto market snapshot with updated prices
-and fresh wording. Ensure to include these phrases in the response: Bitcoin price, BTC/USDT, Ethereum price, ETH/USDT, Solana (SOL).
-
-Rules:
-- Write plain text only
-- No HTML
-- No URLs
-- Neutral, professional tone
-- Similar length
-- One paragraph
-
-TEXT:
-{plain_text}
-"""
-
-    response = client.chat.completions.create(
-        model="gpt-4o-mini",
-        messages=[{"role": "user", "content": prompt}],
-        temperature=0.4,
-        max_tokens=200,
-    )
-
-    return response.choices[0].message.content.strip()
-    
-def extract_anchors(p_tag):
-    anchors = []
-    for a in p_tag.find_all("a"):
-        anchors.append({
-            "text": a.get_text(strip=True),
-            "href": a.get("href"),
-            "attrs": {
-                "target": a.get("target"),
-                "rel": a.get("rel")
-            }
-        })
-    return anchors
-    
-def inject_anchors(text, anchors):
-    for a in anchors:
-        target_attr = ""
-        rel_attr = ""
-
-        if a["attrs"].get("target"):
-            target_attr = f' target="{a["attrs"]["target"]}"'
-
-        if a["attrs"].get("rel"):
-            rel_value = " ".join(a["attrs"]["rel"])
-            rel_attr = f' rel="{rel_value}"'
-
-        anchor_html = (
-            f'<a href="{a["href"]}"'
-            f'{target_attr}'
-            f'{rel_attr}>'
-            f'{a["text"]}</a>'
-        )
-
-        if a["text"] in text:
-            text = text.replace(a["text"], anchor_html, 1)
-        else:
-            # fallback: append anchor nếu AI không nhắc tới
-            text += f" {anchor_html}"
-
-    return text
-
-def update_crypto_price_snapshot(soup):
-    h2 = soup.find(
-        "h2",
-        string=lambda t: t and "Crypto Price Watch: BTC, ETH, and Altcoins" in t
-    )
-
-    if not h2:
-        print("⚠️ Không tìm thấy H2 Crypto Price Watch")
-        return False
-
-    # Collect <p> sau H2
-    p_tags = []
-    cur = h2.find_next_sibling()
-    while cur and cur.name != "h2":
-        if cur.name == "p":
-            p_tags.append(cur)
-        cur = cur.find_next_sibling()
-
-    # Expect structure:
-    # p_tags[0] = intro (giữ nguyên)
-    # p_tags[1] = BTC
-    # p_tags[2] = ETH
-    # p_tags[3] = SOL
-    if len(p_tags) < 4:
-        print("⚠️ Snapshot structure không đủ 4 <p>")
-        return False
-
-    snapshot_ps = p_tags[1:4]
-
-    for p in snapshot_ps:
-        # 1️⃣ Extract anchors
-        anchors = extract_anchors(p)
-
-        # 2️⃣ Plain text (remove anchors)
-        plain_text = p.get_text(" ", strip=True)
-
-        print("🤖 Sending snapshot paragraph to OpenAI...")
-        new_text = rewrite_snapshot_with_openai(plain_text)
-
-        print("🧪 OpenAI response:")
-        print(new_text)
-
-        # 3️⃣ Inject anchors back
-        final_html = inject_anchors(new_text, anchors)
-
-        # 4️⃣ Replace <p> content
-        p.clear()
-        p.append(BeautifulSoup(final_html, "html.parser"))
-
-    print("✅ Crypto price snapshot updated")
     return True
 
 # ================ MAIN =================
