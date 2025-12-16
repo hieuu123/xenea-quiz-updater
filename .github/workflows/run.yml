@@ -32,6 +32,11 @@ jobs:
   run-script:
     runs-on: ubuntu-latest
 
+    env:
+      OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+      WP_USERNAME: ${{ secrets.WP_USERNAME }}
+      WP_APP_PASSWORD: ${{ secrets.WP_APP_PASSWORD }}
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
