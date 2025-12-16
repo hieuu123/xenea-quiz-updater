@@ -182,48 +182,61 @@ def update_post_after_h2(target_h2_text, question, answer):
 
 # ================ REWRITE SNAPSHOT ================
 
-def rewrite_crypto_snapshot_with_openai(old_text):
+def rewrite_snapshot_with_openai(plain_text):
     prompt = f"""
-You are a crypto market analyst.
+Rewrite the following crypto market snapshot with updated prices
+and fresh wording.
 
-Rewrite the following daily crypto market snapshot.
-Return ONLY valid JSON in the exact format below.
-
-DO NOT include markdown.
-DO NOT include explanations.
-DO NOT include extra keys.
-
-JSON FORMAT:
-{{
-  "btc": "...",
-  "eth": "...",
-  "sol": "..."
-}}
-
-RULES:
-- Update prices realistically
-- Avoid duplicate wording
+Rules:
+- Write plain text only
+- No HTML
+- No URLs
 - Neutral, professional tone
-- Do NOT include URLs
-- Do NOT mention dates
+- Similar length
+- One paragraph
 
 TEXT:
-{old_text}
+{plain_text}
 """
 
     response = client.chat.completions.create(
-        model="gpt-5-mini",
+        model="gpt-4o-mini",
         messages=[{"role": "user", "content": prompt}],
+        temperature=0.4,
+        max_tokens=200,
     )
 
-    raw = response.choices[0].message.content.strip()
+    return response.choices[0].message.content.strip()
+    
+def extract_anchors(p_tag):
+    anchors = []
+    for a in p_tag.find_all("a"):
+        anchors.append({
+            "text": a.get_text(strip=True),
+            "href": a.get("href"),
+            "attrs": {
+                "target": a.get("target"),
+                "rel": a.get("rel")
+            }
+        })
+    return anchors
+    
+def inject_anchors(text, anchors):
+    for a in anchors:
+        anchor_html = (
+            f'<a href="{a["href"]}"'
+            f'{f" target=\\"{a["attrs"]["target"]}\\"" if a["attrs"]["target"] else ""}'
+            f'{f" rel=\\"{" ".join(a["attrs"]["rel"])}\\"" if a["attrs"]["rel"] else ""}>'
+            f'{a["text"]}</a>'
+        )
 
-    try:
-        data = json.loads(raw)
-        return data["btc"], data["eth"], data["sol"]
-    except Exception as e:
-        print("❌ JSON parse failed:", raw[:300])
-        return None
+        if a["text"] in text:
+            text = text.replace(a["text"], anchor_html, 1)
+        else:
+            # fallback: append anchor at end if AI không nhắc tới
+            text += f" {anchor_html}"
+
+    return text
 
 def update_crypto_price_snapshot(soup):
     h2 = soup.find(
@@ -232,10 +245,10 @@ def update_crypto_price_snapshot(soup):
     )
 
     if not h2:
-        print("⚠️ Không tìm thấy Crypto Price Watch H2")
+        print("⚠️ Không tìm thấy H2 Crypto Price Watch")
         return False
 
-    # Collect <p> until next H2
+    # Collect <p> sau H2
     p_tags = []
     cur = h2.find_next_sibling()
     while cur and cur.name != "h2":
@@ -243,38 +256,38 @@ def update_crypto_price_snapshot(soup):
             p_tags.append(cur)
         cur = cur.find_next_sibling()
 
+    # Expect structure:
+    # p_tags[0] = intro (giữ nguyên)
+    # p_tags[1] = BTC
+    # p_tags[2] = ETH
+    # p_tags[3] = SOL
     if len(p_tags) < 4:
-        print("⚠️ Không đủ paragraph cho Crypto Price Snapshot")
+        print("⚠️ Snapshot structure không đủ 4 <p>")
         return False
 
-    intro_p = p_tags[0]          # giữ nguyên
-    snapshot_ps = p_tags[1:4]    # chỉ update 3 đoạn này
+    snapshot_ps = p_tags[1:4]
 
-    # Extract plain text (anchors removed for AI)
-    plain_text = "\n\n".join(
-    p.get_text(" ", strip=True) for p in snapshot_ps
-)
+    for p in snapshot_ps:
+        # 1️⃣ Extract anchors
+        anchors = extract_anchors(p)
 
-    print("🤖 Sending snapshot to OpenAI...")
-    result = rewrite_crypto_snapshot_with_openai(plain_text)
-    if not result:
-        return False
-    
-    btc_text, eth_text, sol_text = result
-    new_paragraphs = [btc_text, eth_text, sol_text]
+        # 2️⃣ Plain text (remove anchors)
+        plain_text = p.get_text(" ", strip=True)
 
-    # Inject new text back but KEEP <a> tags
-    for i, p in enumerate(snapshot_ps):
-        anchors = p.find_all("a")
+        print("🤖 Sending snapshot paragraph to OpenAI...")
+        new_text = rewrite_snapshot_with_openai(plain_text)
+
+        print("🧪 OpenAI response:")
+        print(new_text)
+
+        # 3️⃣ Inject anchors back
+        final_html = inject_anchors(new_text, anchors)
+
+        # 4️⃣ Replace <p> content
         p.clear()
-        p.append(new_paragraphs[i])
+        p.append(BeautifulSoup(final_html, "html.parser"))
 
-        # Re-attach anchors at original positions (safe approach)
-        for a in anchors:
-            p.append(" ")
-            p.append(a)
-
-    print("✅ Crypto snapshot updated")
+    print("✅ Crypto price snapshot updated")
     return True
 
 # ================ MAIN =================
