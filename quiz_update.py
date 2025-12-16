@@ -4,8 +4,8 @@ from bs4 import BeautifulSoup
 
 # ================= CONFIG =================
 WP_URL = "https://blog.mexc.com/wp-json/wp/v2/posts"
-WP_USERNAME = "AI Picks"
-WP_APP_PASSWORD = "BZjF 3sMe HQgG 041j y079 SaFQ"
+WP_USERNAME = os.getenv("WP_USERNAME")
+WP_APP_PASSWORD = os.getenv("WP_APP_PASSWORD")
 POST_ID = 304794
 
 TARGET_H2_TEXT = "Xenea Wallet Daily Quiz Today for December 16, 2025"
