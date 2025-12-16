@@ -185,7 +185,7 @@ def update_post_after_h2(target_h2_text, question, answer):
 def rewrite_snapshot_with_openai(plain_text):
     prompt = f"""
 Rewrite the following crypto market snapshot with updated prices
-and fresh wording.
+and fresh wording. Ensure to include these phrases in the response: Bitcoin price, BTC/USDT, Ethereum price, ETH/USDT, Solana (SOL).
 
 Rules:
 - Write plain text only
