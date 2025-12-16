@@ -135,6 +135,9 @@ def update_post_after_h2(target_h2_text, question, answer):
         answer_p.append(strong_ans)
         answer_p.append(" " + answer)
 
+    # ===== UPDATE CRYPTO SNAPSHOT (ALWAYS RUN) =====
+    update_crypto_price_snapshot(soup)
+    
     # ========== FIND & REPLACE DATE TRONG CONTENT ==========
     new_content = str(soup)
     new_content = new_content.replace(OLD_DATE, NEW_DATE)
@@ -175,6 +178,89 @@ def update_post_after_h2(target_h2_text, question, answer):
     else:
         print("⚠️ Title update failed (Content was updated OK)")
 
+    return True
+
+
+# ================ REWRITE SNAPSHOT ================
+
+def rewrite_crypto_snapshot_with_openai(old_text):
+    prompt = f"""
+You are a crypto market analyst writing a daily market snapshot.
+
+Rewrite the following crypto price snapshot with:
+- Updated prices (use approximate realistic current values)
+- Natural, non-duplicated wording
+- Professional, neutral tone
+- Similar length
+- DO NOT mention dates
+- DO NOT add promotional language
+
+IMPORTANT:
+- Keep references to BTC, ETH, and SOL
+- Do NOT include URLs
+- Return 3 paragraphs ONLY, separated by newline.
+
+TEXT:
+{old_text}
+"""
+
+    response = client.chat.completions.create(
+        model="gpt-5-mini",
+        messages=[{"role": "user", "content": prompt}],
+    )
+
+    return response.choices[0].message.content.strip()
+
+def update_crypto_price_snapshot(soup):
+    h2 = soup.find(
+        "h2",
+        string=lambda t: t and "Crypto Price Watch: BTC, ETH, and Altcoins" in t
+    )
+
+    if not h2:
+        print("⚠️ Không tìm thấy Crypto Price Watch H2")
+        return False
+
+    # Collect <p> until next H2
+    p_tags = []
+    cur = h2.find_next_sibling()
+    while cur and cur.name != "h2":
+        if cur.name == "p":
+            p_tags.append(cur)
+        cur = cur.find_next_sibling()
+
+    if len(p_tags) < 4:
+        print("⚠️ Không đủ paragraph cho Crypto Price Snapshot")
+        return False
+
+    intro_p = p_tags[0]          # giữ nguyên
+    snapshot_ps = p_tags[1:4]    # chỉ update 3 đoạn này
+
+    # Extract plain text (anchors removed for AI)
+    plain_text = "\n\n".join(
+    p.get_text(" ", strip=True) for p in snapshot_ps
+)
+
+    print("🤖 Sending snapshot to OpenAI...")
+    new_text = rewrite_crypto_snapshot_with_openai(plain_text)
+    new_paragraphs = new_text.split("\n")
+
+    if len(new_paragraphs) != 3:
+        print("⚠️ OpenAI trả về sai format")
+        return False
+
+    # Inject new text back but KEEP <a> tags
+    for i, p in enumerate(snapshot_ps):
+        anchors = p.find_all("a")
+        p.clear()
+        p.append(new_paragraphs[i])
+
+        # Re-attach anchors at original positions (safe approach)
+        for a in anchors:
+            p.append(" ")
+            p.append(a)
+
+    print("✅ Crypto snapshot updated")
     return True
 
 # ================ MAIN =================
