@@ -32,18 +32,12 @@ jobs:
   run-script:
     runs-on: ubuntu-latest
 
-    env:
-      OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-      WP_USERNAME: ${{ secrets.WP_USERNAME }}
-      WP_APP_PASSWORD: ${{ secrets.WP_APP_PASSWORD }}
+    # env:
+    #   OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+    #   WP_USERNAME: ${{ secrets.WP_USERNAME }}
+    #   WP_APP_PASSWORD: ${{ secrets.WP_APP_PASSWORD }}
 
     steps:
-      - name: Debug ENV
-        run: |
-          echo "OPENAI_API_KEY exists -> ${OPENAI_API_KEY:+YES}"
-          echo "WP_USERNAME exists -> ${WP_USERNAME:+YES}"
-          echo "WP_APP_PASSWORD exists -> ${WP_APP_PASSWORD:+YES}"
-          
       - name: Checkout code
         uses: actions/checkout@v3
 
