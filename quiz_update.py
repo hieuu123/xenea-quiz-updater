@@ -8,12 +8,12 @@ WP_USERNAME = "AI Picks"
 WP_APP_PASSWORD = "BZjF 3sMe HQgG 041j y079 SaFQ"
 POST_ID = 304794
 
-TARGET_H2_TEXT = "Xenea Wallet Daily Quiz Today for December 15, 2025"
-CHECK_ANSWER = "D) Meme PoW coin."
+TARGET_H2_TEXT = "Xenea Wallet Daily Quiz Today for December 16, 2025"
+CHECK_ANSWER = "A) Smart-contract Layer 1."
 
 # ngày find & replace
-OLD_DATE = "December 15"
-NEW_DATE = "December 16"
+OLD_DATE = "December 16"
+NEW_DATE = "December 17"
 
 
 # ================ SCRAPE SITE 1 ================
@@ -36,7 +36,7 @@ def scrape_quiz_site1():
 
 # ================ SCRAPE SITE 2 ================
 def scrape_quiz_site2():
-    url = "https://www.quiknotes.in/xenea-wallet-daily-quiz-answer-16-december-2025/"
+    url = "https://www.quiknotes.in/xenea-wallet-daily-quiz-answer-17-december-2025/"
     print(f"[+] Scraping quiz from {url}")
     r = requests.get(url, timeout=15, headers={"User-Agent": "Mozilla/5.0"})
     r.raise_for_status()
