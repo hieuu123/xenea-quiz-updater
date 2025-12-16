@@ -223,17 +223,27 @@ def extract_anchors(p_tag):
     
 def inject_anchors(text, anchors):
     for a in anchors:
+        target_attr = ""
+        rel_attr = ""
+
+        if a["attrs"].get("target"):
+            target_attr = f' target="{a["attrs"]["target"]}"'
+
+        if a["attrs"].get("rel"):
+            rel_value = " ".join(a["attrs"]["rel"])
+            rel_attr = f' rel="{rel_value}"'
+
         anchor_html = (
             f'<a href="{a["href"]}"'
-            f'{f" target=\\"{a["attrs"]["target"]}\\"" if a["attrs"]["target"] else ""}'
-            f'{f" rel=\\"{" ".join(a["attrs"]["rel"])}\\"" if a["attrs"]["rel"] else ""}>'
+            f'{target_attr}'
+            f'{rel_attr}>'
             f'{a["text"]}</a>'
         )
 
         if a["text"] in text:
             text = text.replace(a["text"], anchor_html, 1)
         else:
-            # fallback: append anchor at end if AI không nhắc tới
+            # fallback: append anchor nếu AI không nhắc tới
             text += f" {anchor_html}"
 
     return text
