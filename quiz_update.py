@@ -12,12 +12,12 @@ OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 client = OpenAI(api_key=OPENAI_API_KEY)
 POST_ID = 304794
 
-TARGET_H2_TEXT = "Xenea Wallet Daily Quiz Today for December 17, 2025"
+TARGET_H2_TEXT = "Xenea Wallet Daily Quiz Today for December 16, 2025"
 CHECK_ANSWER = "A) Smart-contract Layer 1..."
 
 # ngày find & replace
-OLD_DATE = "December 17"
-NEW_DATE = "December 16"
+OLD_DATE = "December 16"
+NEW_DATE = "December 17"
 
 
 # ================ SCRAPE SITE 1 ================
@@ -184,20 +184,28 @@ def update_post_after_h2(target_h2_text, question, answer):
 
 def rewrite_crypto_snapshot_with_openai(old_text):
     prompt = f"""
-You are a crypto market analyst writing a daily market snapshot.
+You are a crypto market analyst.
 
-Rewrite the following crypto price snapshot with:
-- Updated prices (use approximate realistic current values)
-- Natural, non-duplicated wording
-- Professional, neutral tone
-- Similar length
-- DO NOT mention dates
-- DO NOT add promotional language
+Rewrite the following daily crypto market snapshot.
+Return ONLY valid JSON in the exact format below.
 
-IMPORTANT:
-- Keep references to BTC, ETH, and SOL
+DO NOT include markdown.
+DO NOT include explanations.
+DO NOT include extra keys.
+
+JSON FORMAT:
+{{
+  "btc": "...",
+  "eth": "...",
+  "sol": "..."
+}}
+
+RULES:
+- Update prices realistically
+- Avoid duplicate wording
+- Neutral, professional tone
 - Do NOT include URLs
-- Return 3 paragraphs ONLY, separated by newline.
+- Do NOT mention dates
 
 TEXT:
 {old_text}
@@ -208,7 +216,14 @@ TEXT:
         messages=[{"role": "user", "content": prompt}],
     )
 
-    return response.choices[0].message.content.strip()
+    raw = response.choices[0].message.content.strip()
+
+    try:
+        data = json.loads(raw)
+        return data["btc"], data["eth"], data["sol"]
+    except Exception as e:
+        print("❌ JSON parse failed:", raw[:300])
+        return None
 
 def update_crypto_price_snapshot(soup):
     h2 = soup.find(
@@ -241,12 +256,12 @@ def update_crypto_price_snapshot(soup):
 )
 
     print("🤖 Sending snapshot to OpenAI...")
-    new_text = rewrite_crypto_snapshot_with_openai(plain_text)
-    new_paragraphs = new_text.split("\n")
-
-    if len(new_paragraphs) != 3:
-        print("⚠️ OpenAI trả về sai format")
+    result = rewrite_crypto_snapshot_with_openai(plain_text)
+    if not result:
         return False
+    
+    btc_text, eth_text, sol_text = result
+    new_paragraphs = [btc_text, eth_text, sol_text]
 
     # Inject new text back but KEEP <a> tags
     for i, p in enumerate(snapshot_ps):
