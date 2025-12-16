@@ -14,7 +14,7 @@ WP_APP_PASSWORD = os.getenv("WP_APP_PASSWORD")
 POST_ID = 304794
 
 TARGET_H2_TEXT = "Xenea Wallet Daily Quiz Today for December 16, 2025"
-CHECK_ANSWER = "A) Smart-contract Layer 1."
+CHECK_ANSWER = "A) Smart-contract Layer 1..."
 
 # ngày find & replace
 OLD_DATE = "December 16"
