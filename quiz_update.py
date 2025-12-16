@@ -12,12 +12,12 @@ OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 client = OpenAI(api_key=OPENAI_API_KEY)
 POST_ID = 304794
 
-TARGET_H2_TEXT = "Xenea Wallet Daily Quiz Today for December 17, 2025"
+TARGET_H2_TEXT = "Xenea Wallet Daily Quiz Today for December 16, 2025"
 CHECK_ANSWER = "A) Smart-contract Layer 1..."
 
 # ngày find & replace
-OLD_DATE = "December 17"
-NEW_DATE = "December 16"
+OLD_DATE = "December 16"
+NEW_DATE = "December 17"
 
 
 # ================ SCRAPE SITE 1 ================
