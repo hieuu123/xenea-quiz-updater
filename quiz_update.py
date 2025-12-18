@@ -5,7 +5,7 @@ import html
 from bs4 import BeautifulSoup
 
 # ================= CONFIG =================
-WP_URL = "https://blog.mexc.com/wp-json/wp/v2/posts"
+WP_URL = "https://blog.mexc.fm/wp-json/wp/v2/posts"
 WP_USERNAME = os.getenv("WP_USERNAME")
 WP_APP_PASSWORD = os.getenv("WP_APP_PASSWORD")
 POST_ID = 309434  # ID bài muốn update
