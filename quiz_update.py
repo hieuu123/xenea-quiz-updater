@@ -92,7 +92,7 @@ def update_post_after_h2(target_h2_text, question, answer):
     h2_tag = None
     for h2 in soup.find_all("h2"):
         h2_norm = normalize(h2.get_text())
-        if "xenea wallet daily quiz" in h2_norm:
+        if "xenea wallet daily quiz today" in h2_norm:
             h2_tag = h2
             break
 
