@@ -1,6 +1,7 @@
 import os
 import base64
 import requests
+import html
 from bs4 import BeautifulSoup
 
 # ================= CONFIG =================
@@ -79,13 +80,16 @@ def update_post_after_h2(target_h2_text, question, answer):
     # 3. Tìm <h2> có text khớp
     h2_tag = None
     for h2 in soup.find_all("h2"):
-        if target_h2_text in h2.get_text(strip=True):
+        raw_text = h2.get_text(strip=True)
+        decoded_text = html.unescape(raw_text)
+    
+        if target_h2_text in decoded_text:
             h2_tag = h2
             break
 
     if not h2_tag:
         print("❌ Không tìm thấy H2 phù hợp")
-        print("Rendered snippet:", old_content[:4000])
+        print("Rendered snippet:", old_content[:400])
         return
 
     # 4. Xóa 2 <p> liền kề sau H2 (nếu có)
