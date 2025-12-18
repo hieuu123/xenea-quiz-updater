@@ -89,7 +89,7 @@ def update_post_after_h2(target_h2_text, question, answer):
 
     if not h2_tag:
         print("❌ Không tìm thấy H2 phù hợp")
-        print("Rendered snippet:", old_content[:400])
+        print("Rendered snippet:", old_content[:4000])
         return
 
     # 4. Xóa 2 <p> liền kề sau H2 (nếu có)
