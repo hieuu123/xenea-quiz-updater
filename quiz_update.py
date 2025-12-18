@@ -79,15 +79,15 @@ def update_post_after_h2(target_h2_text, question, answer):
 
     # 3. Tìm <h2> có text khớp
     def normalize(text):
-    return (
-        html.unescape(text)
-        .lower()
-        .replace("’", "'")
-        .replace("–", "-")
-        .replace("—", "-")
-        .replace("\xa0", " ")
-        .strip()
-    )
+        return (
+            html.unescape(text)
+            .lower()
+            .replace("’", "'")
+            .replace("–", "-")
+            .replace("—", "-")
+            .replace("\xa0", " ")
+            .strip()
+        )
     
     h2_tag = None
     for h2 in soup.find_all("h2"):
