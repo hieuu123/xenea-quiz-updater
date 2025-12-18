@@ -77,7 +77,12 @@ def update_post_after_h2(target_h2_text, question, answer):
     soup = BeautifulSoup(old_content, "html.parser")
 
     # 3. Tìm <h2> có text khớp
-    h2_tag = soup.find("h2", string=lambda t: t and target_h2_text in t)
+    h2_tag = None
+    for h2 in soup.find_all("h2"):
+        if target_h2_text in h2.get_text(strip=True):
+            h2_tag = h2
+            break
+
     if not h2_tag:
         print("❌ Không tìm thấy H2 phù hợp")
         print("Rendered snippet:", old_content[:400])
