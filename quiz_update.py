@@ -101,31 +101,31 @@ def update_post_after_h2(target_h2_text, question, answer):
         print("Rendered snippet:", old_content[:4000])
         return
 
-    # 4. Xóa 2 <p> liền kề sau H2 (nếu có)
-    next_tag = h2_tag.find_next_sibling()
+    # 4. Xóa Quiz + Answer cũ
     removed = 0
-    for _ in range(2):
-        if next_tag and next_tag.name == "p":
-            to_remove = next_tag
-            next_tag = next_tag.find_next_sibling()
-            to_remove.decompose()
+    node = h2_tag.find_next_sibling("p")
+    
+    while node:
+        text = node.get_text(" ", strip=True).lower()
+    
+        if text.startswith(("quiz:", "answer:")):
+            next_node = node.find_next_sibling("p")
+            node.decompose()
             removed += 1
-    print(f"[+] Removed {removed} <p> sau H2")
+            node = next_node
+            continue
+        break
+    
+    print(f"[+] Removed {removed} quiz <p>")
 
-    # 5. Tạo Q/A mới
+    # 5. Tạo Q/A mới (bold toàn bộ)
     q_tag = soup.new_tag("p")
-    q_strong = soup.new_tag("strong")
-    q_strong.string = f"Quiz: {question}"
-    q_tag.append(q_strong)
-
+    q_tag.append(soup.new_tag("strong"))
+    q_tag.strong.string = f"Quiz: {question}"
+    
     a_tag = soup.new_tag("p")
-    a_strong = soup.new_tag("strong")
-    a_strong.string = f"Answer: {answer}"
-    a_tag.append(a_strong)
-
-    strong = soup.new_tag("strong")
-    strong.string = answer
-    a_tag.append(strong)
+    a_tag.append(soup.new_tag("strong"))
+    a_tag.strong.string = f"Answer: {answer}"
 
     # 6. Chèn Q/A sau H2
     h2_tag.insert_after(a_tag)
