@@ -9,7 +9,7 @@ WP_URL = "https://blog.mexc.fm/wp-json/wp/v2/posts"
 WP_USERNAME = os.getenv("WP_USERNAME")
 WP_APP_PASSWORD = os.getenv("WP_APP_PASSWORD")
 POST_ID = 309434  # ID bài muốn update
-TARGET_H2_TEXT = "Xenea Wallet Daily Quiz Today’s Answer - December 19, 2025"
+# TARGET_H2_TEXT = "Xenea Wallet Daily Quiz Today’s Answer - December 19, 2025"
 CHECK_ANSWER = "A) Layer 1 with subnets..."
 
 # ================ SCRAPE SITE 1 ================
@@ -78,12 +78,21 @@ def update_post_after_h2(target_h2_text, question, answer):
     soup = BeautifulSoup(old_content, "html.parser")
 
     # 3. Tìm <h2> có text khớp
+    def normalize(text):
+    return (
+        html.unescape(text)
+        .lower()
+        .replace("’", "'")
+        .replace("–", "-")
+        .replace("—", "-")
+        .replace("\xa0", " ")
+        .strip()
+    )
+    
     h2_tag = None
     for h2 in soup.find_all("h2"):
-        raw_text = h2.get_text(strip=True)
-        decoded_text = html.unescape(raw_text)
-    
-        if target_h2_text in decoded_text:
+        h2_norm = normalize(h2.get_text())
+        if "xenea wallet daily quiz" in h2_norm:
             h2_tag = h2
             break
 
