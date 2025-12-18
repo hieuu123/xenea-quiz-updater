@@ -114,10 +114,14 @@ def update_post_after_h2(target_h2_text, question, answer):
 
     # 5. Tạo Q/A mới
     q_tag = soup.new_tag("p")
-    q_tag.string = f"Question: {question}"
+    q_strong = soup.new_tag("strong")
+    q_strong.string = f"Quiz: {question}"
+    q_tag.append(q_strong)
 
     a_tag = soup.new_tag("p")
-    a_tag.append("Answer: ")
+    a_strong = soup.new_tag("strong")
+    a_strong.string = f"Answer: {answer}"
+    a_tag.append(a_strong)
 
     strong = soup.new_tag("strong")
     strong.string = answer
