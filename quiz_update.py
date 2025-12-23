@@ -8,9 +8,9 @@ from bs4 import BeautifulSoup
 WP_URL = "https://blog.mexc.fm/wp-json/wp/v2/posts"
 WP_USERNAME = os.getenv("WP_USERNAME")
 WP_APP_PASSWORD = os.getenv("WP_APP_PASSWORD")
-POST_ID = 310322  # ID bài muốn update
+POST_ID = 310296  # ID bài muốn update
 TARGET_H2_TEXT = "Xenea Wallet Daily Quiz Today’s Answer - December 19, 2025"
-CHECK_ANSWER = "B) Democratize and decentralize scientific collaboration..."
+CHECK_ANSWER = "B) Bitcoin fork Layer 1..."
 
 # ================ SCRAPE SITE 1 ================
 def scrape_quiz_site1():
