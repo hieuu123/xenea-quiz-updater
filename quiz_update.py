@@ -8,7 +8,7 @@ from bs4 import BeautifulSoup
 WP_URL = "https://blog.mexc.fm/wp-json/wp/v2/posts"
 WP_USERNAME = os.getenv("WP_USERNAME")
 WP_APP_PASSWORD = os.getenv("WP_APP_PASSWORD")
-POST_ID = 313573  # ID bài muốn update
+POST_ID =   # ID bài muốn update
 TARGET_H2_TEXT = "Xenea Wallet Daily Quiz Today’s Answer - December 19, 2025"
 CHECK_ANSWER = "A) Bring off-chain data."
 
