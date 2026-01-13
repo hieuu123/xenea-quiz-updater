@@ -10,7 +10,7 @@ WP_USERNAME = os.getenv("WP_USERNAME")
 WP_APP_PASSWORD = os.getenv("WP_APP_PASSWORD")
 POST_ID = 314365  # ID bài muốn update
 TARGET_H2_TEXT = "Xenea Wallet Daily Quiz Today’s Answer - December 19, 2025"
-CHECK_ANSWER = "A) Reduce bots."
+CHECK_ANSWER = "A) Reduce bots l"
 
 # ================ SCRAPE SITE 1 ================
 def scrape_quiz_site1():
