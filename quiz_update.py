@@ -8,9 +8,9 @@ from bs4 import BeautifulSoup
 WP_URL = "https://blog.mexc.fm/wp-json/wp/v2/posts"
 WP_USERNAME = os.getenv("WP_USERNAME")
 WP_APP_PASSWORD = os.getenv("WP_APP_PASSWORD")
-POST_ID = 332029  # ID bài muốn update
+POST_ID = 333224  # ID bài muốn update
 TARGET_H2_TEXT = "Xenea Wallet Daily Quiz Today’s Answer - December 19, 2025"
-CHECK_ANSWER = "B) Al with public code."
+CHECK_ANSWER = "C) Data that cannot be changed."
 
 # ================ SCRAPE SITE 1 ================
 def scrape_quiz_site1():
@@ -31,7 +31,7 @@ def scrape_quiz_site1():
 
 # ================ SCRAPE SITE 2 ================
 def scrape_quiz_site2():
-    url = "https://www.quiknotes.in/xenea-wallet-daily-quiz-answer-21-april-2026/"
+    url = "https://www.quiknotes.in/xenea-wallet-daily-quiz-answer-22-april-2026/"
     print(f"[+] Scraping quiz from {url}")
     r = requests.get(url, timeout=15, headers={"User-Agent": "Mozilla/5.0"})
     r.raise_for_status()
